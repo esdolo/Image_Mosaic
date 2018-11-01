@@ -15,14 +15,15 @@ for i = 1:N
     %im = double(imrotate(imresize(im, [640, 640]), -90))/255;
      im = double(imresize(im, [640, 640]))/255;
     dataset{cnt} = im;
-    imshow(im);
-    drawnow;
+    %imshow(im);
+    %drawnow;
     cnt = cnt + 1;
     end
 end
 
+
+img1=dataset{1};img2=dataset{4};
 tic
-img1=dataset{4};img2=dataset{5};
 [p1,p2]=Harris_match(img1,img2);
 toc
 '½Çµã¼ì²â½áÊø'
@@ -43,11 +44,11 @@ toc
 %H=inv(H);
 %*******************************************
 
-'¾ØÕóÕýÄæ£º'
-disp(H);
-HV=inv(H);
-disp(HV);
-
+% '¾ØÕóÕýÄæ£º'
+% disp(H);
+% HV=inv(H);
+% disp(HV);
+% 
 
 tic
 [ img_b,old_centre ] = image_blending( img1,img2,H );
@@ -56,38 +57,30 @@ toc
 
 imshow(img_b);
 
+img23=MIX_selected(dataset{2},dataset{3});
+imshow(img23);
+img56=MIX_selected(dataset{5},dataset{6});
+imshow(img56);
+img78=MIX_selected(dataset{7},dataset{8});
+imshow(img78);
+img789=MIX_selected(dataset{9},img78);
+imshow(img789);
+img1234=MIX_selected(img_b,img23);
+imshow(img1234);
+img56789=MIX_selected(img56,img789);
+imshow(img56789);
+img123456789=MIX_selected(img1234,img56789);
+imshow(img123456789);
+imwrite(img123456789,'img123456789.jpg');
 
 
-% ÕýÏòwarp
-% img_x=zeros(800,800,3);
-% for i=1:640
-%     for j=1:640
-%         c=H*[i,j,1]';
-%         c=c/c(3);
-%         for k=1:3
-%         img_x(round(c(1))+100,round(c(2))+100,k)=img1(i,j,k);
-%         end
-%     end
+% newimg=img_b;
+% for i=2:9
+% [newimg,del]=MIX(dataset,newimg);
+% dataset(del)=[];
+% imshow(newimg);
 % end
-% 
-% siz=size(img_b);
-% img_b2=zeros(siz);
-% for i=1:siz(1)
-%     for j=1:siz(2)
-%         c=HV*[i-old_centre(1),j-old_centre(2),1]';
-%         c=c/c(3);
-%         if(c(1)>0&&c(1)<638&&c(2)>0&&c(2)<638)
-%         for k=1:3
-%         img_b2(i,j,k)=img1(round(c(1)+1),round(c(2)+1),k);
-%         end
-%         end
-%     end
-% end
-% 
-% subplot(1,2,1);imshow(img_b);
-% subplot(1,2,2);
-% imshow(img_b2);
-
+% imwrite(newimg,'MixedImg.jpg');
 
 
 

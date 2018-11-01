@@ -20,14 +20,14 @@ siz_origin=size(img1);
 [y_b,x_b]=meshgrid(1:siz(1),1:siz(2));
 x_b=x_b(:);y_b=y_b(:);
 T_1tob=ones(3,siz(1)*siz(2));
-T_1tob(1,:)=x_b(:)-old_centre(1);
-T_1tob(2,:)=y_b(:)-old_centre(2);
+T_1tob(1,:)=x_b(:)-old_centre(2);
+T_1tob(2,:)=y_b(:)-old_centre(1);
 T_1tob=inv(H)*T_1tob;
 T_1tob(1,:)=round(T_1tob(1,:)./T_1tob(3,:));
 T_1tob(2,:)=round(T_1tob(2,:)./T_1tob(3,:));
 
 for q=1:siz(1)*siz(2)
-    if(T_1tob(1,q)<1||T_1tob(1,q)>siz_origin(1)||T_1tob(2,q)<1||T_1tob(2,q)>siz_origin(2))
+    if(T_1tob(1,q)<1||T_1tob(1,q)>siz_origin(2)||T_1tob(2,q)<1||T_1tob(2,q)>siz_origin(1))
         continue;
     end
     if(img_b(y_b(q),x_b(q),1)~=0) 
@@ -42,34 +42,42 @@ for q=1:siz(1)*siz(2)
     %disp(img1(T_1tob(1,q),T_1tob(2,q),k));
     end
 end
-imshow(img_b);
-
-[newH, newW, newX, newY, xB, yB] = getNewSize(inv(H), 640, 640, 640, 640);
-[X,Y] = meshgrid(1:640,1:640);
-[XX,YY] = meshgrid(newX:newX+newW-1, newY:newY+newH-1);
-AA = ones(3,newH*newW);
-AA(1,:) = reshape(XX,1,newH*newW);
-AA(2,:) = reshape(YY,1,newH*newW);
-
-AA = inv(H)*AA;
-XX = reshape(AA(1,:)./AA(3,:), newH, newW);
-YY = reshape(AA(2,:)./AA(3,:), newH, newW);
-
-% XX（i），YY(j)： 新图像上每一点（i,j）对应原图像上XX（i），YY(j)点。
-% INTERPOLATION, WARP IMAGE A INTO NEW IMAGE
-newImage(:,:,1) = interp2(X, Y, double(img1(:,:,1)), XX, YY);
-newImage(:,:,2) = interp2(X, Y, double(img1(:,:,2)), XX, YY);
-newImage(:,:,3) = interp2(X, Y, double(img1(:,:,3)), XX, YY);
-img_b=newImage;
-imshow(img_b);
+%subplot(1,2,1);
+% for f=1:siz(1)-1
+%     if(std(img_b(f,:,1))==0)
+%         img_b(f,:,:)=[];
+%     end
+% end
+%imshow(img_b);
+;
+% [newH, newW, newX, newY, xB, yB] = getNewSize(inv(H), 640, 640, 640, 640);
+% [X,Y] = meshgrid(1:640,1:640);
+% [XX,YY] = meshgrid(newX:newX+newW-1, newY:newY+newH-1);
+% AA = ones(3,newH*newW);
+% AA(1,:) = reshape(XX,1,newH*newW);
+% AA(2,:) = reshape(YY,1,newH*newW);
+% 
+% AA = inv(H)*AA;
+% XX = reshape(AA(1,:)./AA(3,:), newH, newW);
+% YY = reshape(AA(2,:)./AA(3,:), newH, newW);
+% 
+% % XX（i），YY(j)： 新图像上每一点（i,j）对应原图像上XX（i），YY(j)点。
+% % INTERPOLATION, WARP IMAGE A INTO NEW IMAGE
+% newImage(:,:,1) = interp2(X, Y, double(img1(:,:,1)), XX, YY);
+% newImage(:,:,2) = interp2(X, Y, double(img1(:,:,2)), XX, YY);
+% newImage(:,:,3) = interp2(X, Y, double(img1(:,:,3)), XX, YY);
+% img_b=newImage;
+% subplot(1,2,2);
+% imshow(img_b);
 
 function [ img_b,old_centre ] = image_widen( img1,img2,H )
 % determine the size of combined image
     img_b=img2;
     siz1=size(img1);siz2=size(img2);
-    w1=siz1(1);h1=siz1(2);w2=siz2(1);h2=siz2(2);
+    w1=siz1(2);h1=siz1(1);w2=siz2(2);h2=siz2(1);
     
     corner_r=[H*[1,1,1]',H*[w1,1,1]',H*[1,h1,1]',H*[w1,h1,1]']';
+    
     for i=1:4
          corner_r(i,1:2)=corner_r(i,1:2)/corner_r(i,3);
     end
@@ -83,29 +91,29 @@ function [ img_b,old_centre ] = image_widen( img1,img2,H )
 %     
     corner_r=sortrows(corner_r,1);
     temp=corner_r(1,:);
-    x_min=temp(2);% x min
+    y_min=temp(1);% x min
     temp=corner_r(4,:);
-    x_max=temp(2);% x max
+    y_max=temp(1);% x max
     corner_r=sortrows(corner_r,2);
     temp=corner_r(1,:);
-    y_min=temp(1);% y min
+    x_min=temp(2);% y min
     temp=corner_r(4,:);
-    y_max=temp(1);% y max
+    x_max=temp(2);% y max
     
     old_centre=ones(2,1);
     if x_min<=0
-        img_b = padarray(img_b, [round(-x_min+10), 0], 'pre');
+        img_b = padarray(img_b, [ceil(-x_min+10), 0], 'pre');
         old_centre(1)=round(-x_min+10);
     end
     if x_max>h2
-        img_b = padarray(img_b, [round(x_max-h2+10), 0], 'post');
+        img_b = padarray(img_b, [ceil(x_max-h2+10), 0], 'post');
     end
     if y_min<=0
-        img_b = padarray(img_b, [0,round(-y_min+10)], 'pre');
+        img_b = padarray(img_b, [0,ceil(-y_min+10)], 'pre');
         old_centre(2)=round(-y_min+10);
     end
     if y_max>w2
-        img_b = padarray(img_b, [0,round(y_max-w2+10)], 'post');
+        img_b = padarray(img_b, [0,ceil(y_max-w2+10)], 'post');
     end
 end
 end
